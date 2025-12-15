@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model categories {
+  id    Int     @id @default(autoincrement())
+  name  String
+  posts posts[]
+}
+
+model posts {
+  id          Int        @id @default(autoincrement())
+  title       String
+  author_id   Int
+  category_id Int
+  created_at  DateTime   @default(now())
+  updated_at  DateTime
+  users       users      @relation(fields: [author_id], references: [id])
+  categories  categories @relation(fields: [category_id], references: [id])
+}
+
+model profiles {
+  id      Int    @id @default(autoincrement())
+  bio     String
+  user_id Int    @unique
+  users   users  @relation(fields: [user_id], references: [id])
+}
+
+model users {
+  id       Int       @id @default(autoincrement())
+  name     String
+  email    String    @unique
+  role     String
+  posts    posts[]
+  profiles profiles?
+}
