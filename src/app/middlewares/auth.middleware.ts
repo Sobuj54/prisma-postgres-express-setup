@@ -1,8 +1,7 @@
 import jwt, { Secret } from "jsonwebtoken";
-import { User } from "../modules/user/user.model";
-import { accessTokenType } from "../modules/auth/auth.interface";
 import { asyncHandler } from "../utils/asyncHandler";
 import ApiError from "../utils/ApiError";
+import { accessTokenType } from "../interfaces/tokenTypes";
 
 export const verifyJWT = asyncHandler(async (req, _, next) => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
@@ -10,16 +9,11 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     throw new ApiError(401, "Unauthorized request.");
   }
 
-  const decodedToken: accessTokenType = jwt.verify(
+  const verifiedUser: accessTokenType = jwt.verify(
     token,
     process.env.ACCESS_TOKEN_SECRET as Secret
   ) as accessTokenType;
 
-  const user = await User.findById(decodedToken?._id).select(
-    "-password -refreshToken"
-  );
-  if (!user) throw new ApiError(403, "Forbidden");
-
-  req.user = user;
+  req.user = verifiedUser;
   next();
 });
